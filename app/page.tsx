@@ -17,6 +17,7 @@ import {
   Pencil,
   X
 } from 'lucide-react';
+import { getDeviceInfo, DeviceInfo } from '@/lib/device';
 
 interface Participant {
   id: number;
@@ -26,6 +27,7 @@ interface Participant {
   email: string;
   association: string;
   registeredAt: string;
+  deviceInfo: DeviceInfo;
 }
 
 export default function OnSpotRegistration() {
@@ -48,7 +50,19 @@ export default function OnSpotRegistration() {
     const saved = localStorage.getItem('omnibsic_event_participants');
     if (saved) {
       try {
-        setParticipants(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        // Migrate old data without deviceInfo to include it
+        const migrated = parsed.map((p: any) => ({
+          ...p,
+          deviceInfo: p.deviceInfo || {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform || 'Unknown',
+            browser: 'Unknown',
+            deviceType: 'desktop',
+            screenResolution: 'Unknown'
+          }
+        }));
+        setParticipants(migrated);
       } catch (e) {
         console.error('Failed to parse saved attendees', e);
       }
@@ -95,7 +109,8 @@ export default function OnSpotRegistration() {
         telephone: formData.telephone.trim(),
         email: formData.email.trim() || 'N/A',
         association: formData.association.trim() || 'N/A',
-        registeredAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        registeredAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        deviceInfo: getDeviceInfo()
       };
 
       setParticipants([newParticipant, ...participants]);
@@ -126,7 +141,10 @@ export default function OnSpotRegistration() {
       'Telephone': p.telephone,
       'Email': p.email,
       'Association / Organization': p.association,
-      'Time Registered': p.registeredAt
+      'Time Registered': p.registeredAt,
+      'Device': `${p.deviceInfo.browser} on ${p.deviceInfo.platform}`,
+      'Device Type': p.deviceInfo.deviceType,
+      'Screen Resolution': p.deviceInfo.screenResolution
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(excelData);
@@ -141,7 +159,10 @@ export default function OnSpotRegistration() {
       { wch: 16 },
       { wch: 25 },
       { wch: 25 },
-      { wch: 15 }
+      { wch: 15 },
+      { wch: 25 },
+      { wch: 12 },
+      { wch: 18 }
     ];
     worksheet['!cols'] = max_widths;
 
