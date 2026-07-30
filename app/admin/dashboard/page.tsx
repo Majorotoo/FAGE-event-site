@@ -96,6 +96,20 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleClearAll = async () => {
+    if (confirm('Are you sure you want to clear ALL registered participants? This action cannot be undone.')) {
+      // Delete all from Supabase
+      const supabase = getSupabase();
+      const { error } = await supabase.from('participants').delete().neq('id', 0);
+      
+      if (error) {
+        console.error('Error clearing participants:', error);
+      } else {
+        setParticipants([]);
+      }
+    }
+  };
+
   const handleExport = () => {
     if (participants.length === 0) return;
 
@@ -191,6 +205,14 @@ export default function AdminDashboard() {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleClearAll}
+            disabled={participants.length === 0}
+            className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 disabled:opacity-40 disabled:hover:bg-amber-600 text-white font-medium text-sm px-4 py-2 rounded-xl transition-all shadow-md shadow-amber-950/40"
+          >
+            <Trash2 className="h-4 w-4" />
+            <span>Clear All</span>
+          </button>
           <button
             onClick={handleExport}
             disabled={participants.length === 0}
