@@ -263,7 +263,7 @@ export default function OnSpotRegistration() {
         <div className="flex items-center space-x-3">
           <div className="h-10 w-10 relative flex items-center justify-center shrink-0">
   <Image
-    src="/images (11).jfif" // Match the exact filename in your public/ folder
+    src="/logo.jfif"
     alt="OmniBSIC Bank Logo"
     width={90}
     height={90}
