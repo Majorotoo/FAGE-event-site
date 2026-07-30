@@ -133,7 +133,7 @@ export default function OnSpotRegistration() {
         association: formData.association.trim() || null,
         device_info: deviceInfo,
         registered_at: new Date().toISOString()
-      }).then(({ error }) => {
+      } as any).then(({ error }) => {
         if (error) {
           console.error('Error saving to Supabase:', error);
         }
