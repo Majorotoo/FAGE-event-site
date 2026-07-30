@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { isAuthenticated, logout } from '@/lib/auth';
 import { DeviceInfo } from '@/lib/device';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 
 interface Participant {
   id: number;
@@ -44,6 +44,7 @@ export default function AdminDashboard() {
 
     // Load participants from Supabase
     const fetchParticipants = async () => {
+      const supabase = getSupabase();
       const { data, error } = await supabase
         .from('participants')
         .select('*')
@@ -84,6 +85,7 @@ export default function AdminDashboard() {
   const handleDelete = async (id: number) => {
     if (confirm('Are you sure you want to delete this participant?')) {
       // Delete from Supabase
+      const supabase = getSupabase();
       const { error } = await supabase.from('participants').delete().eq('id', id);
       
       if (error) {

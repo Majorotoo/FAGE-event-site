@@ -18,7 +18,7 @@ import {
   X
 } from 'lucide-react';
 import { getDeviceInfo, DeviceInfo } from '@/lib/device';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 
 interface Participant {
   id: number;
@@ -49,6 +49,7 @@ export default function OnSpotRegistration() {
   // Load participants from Supabase on mount
   useEffect(() => {
     const fetchParticipants = async () => {
+      const supabase = getSupabase();
       const { data, error } = await supabase
         .from('participants')
         .select('*')
@@ -123,6 +124,7 @@ export default function OnSpotRegistration() {
       setParticipants([newParticipant, ...participants]);
 
       // Save to Supabase
+      const supabase = getSupabase();
       supabase.from('participants').insert({
         first_name: formData.firstName.trim(),
         surname: formData.surname.trim(),
@@ -196,6 +198,7 @@ export default function OnSpotRegistration() {
   const clearList = async () => {
     if (confirm('Are you sure you want to clear all registered participants?')) {
       // Delete all from Supabase
+      const supabase = getSupabase();
       const { error } = await supabase.from('participants').delete().neq('id', 0);
       
       if (error) {
@@ -209,6 +212,7 @@ export default function OnSpotRegistration() {
   const deleteParticipant = async (id: number) => {
     if (confirm('Are you sure you want to delete this participant?')) {
       // Delete from Supabase
+      const supabase = getSupabase();
       const { error } = await supabase.from('participants').delete().eq('id', id);
       
       if (error) {
