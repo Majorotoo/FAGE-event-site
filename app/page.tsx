@@ -434,16 +434,6 @@ export default function OnSpotRegistration() {
               <Users className="h-5 w-5 text-blue-400" />
               <h2 className="text-base font-bold text-white">Registered ({participants.length})</h2>
             </div>
-
-            {participants.length > 0 && (
-              <button
-                onClick={clearList}
-                className="text-xs text-slate-500 hover:text-rose-400 flex items-center gap-1 transition-colors"
-                title="Clear all records"
-              >
-                <Trash2 className="h-3.5 w-3.5" /> Clear
-              </button>
-            )}
           </div>
 
           {/* Scrollable Registered Attendees */}
