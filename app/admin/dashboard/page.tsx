@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { isAuthenticated, logout } from '@/lib/auth';
 import { DeviceInfo } from '@/lib/device';
+import { supabase } from '@/lib/supabase';
 
 interface Participant {
   id: number;
@@ -41,15 +42,25 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Load participants from localStorage
-    const saved = localStorage.getItem('omnibsic_event_participants');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        // Migrate old data without deviceInfo to include it
-        const migrated = parsed.map((p: any) => ({
-          ...p,
-          deviceInfo: p.deviceInfo || {
+    // Load participants from Supabase
+    const fetchParticipants = async () => {
+      const { data, error } = await supabase
+        .from('participants')
+        .select('*')
+        .order('registered_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching participants:', error);
+      } else if (data) {
+        const mapped = data.map((p: any) => ({
+          id: p.id,
+          firstName: p.first_name,
+          surname: p.surname,
+          telephone: p.telephone,
+          email: p.email || 'N/A',
+          association: p.association || 'N/A',
+          registeredAt: new Date(p.registered_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          deviceInfo: p.device_info || {
             userAgent: 'Unknown',
             platform: 'Unknown',
             browser: 'Unknown',
@@ -57,12 +68,12 @@ export default function AdminDashboard() {
             screenResolution: 'Unknown'
           }
         }));
-        setParticipants(migrated);
-      } catch (e) {
-        console.error('Failed to parse saved attendees', e);
+        setParticipants(mapped);
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    };
+    
+    fetchParticipants();
   }, [router]);
 
   const handleLogout = () => {
@@ -70,11 +81,16 @@ export default function AdminDashboard() {
     router.push('/admin/login');
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (confirm('Are you sure you want to delete this participant?')) {
-      const updated = participants.filter(p => p.id !== id);
-      setParticipants(updated);
-      localStorage.setItem('omnibsic_event_participants', JSON.stringify(updated));
+      // Delete from Supabase
+      const { error } = await supabase.from('participants').delete().eq('id', id);
+      
+      if (error) {
+        console.error('Error deleting participant:', error);
+      } else {
+        setParticipants(participants.filter(p => p.id !== id));
+      }
     }
   };
 

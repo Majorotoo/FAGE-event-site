@@ -18,6 +18,7 @@ import {
   X
 } from 'lucide-react';
 import { getDeviceInfo, DeviceInfo } from '@/lib/device';
+import { supabase } from '@/lib/supabase';
 
 interface Participant {
   id: number;
@@ -45,34 +46,39 @@ export default function OnSpotRegistration() {
     association: ''
   });
 
-  // Load saved participants from LocalStorage on mount
+  // Load participants from Supabase on mount
   useEffect(() => {
-    const saved = localStorage.getItem('omnibsic_event_participants');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        // Migrate old data without deviceInfo to include it
-        const migrated = parsed.map((p: any) => ({
-          ...p,
-          deviceInfo: p.deviceInfo || {
-            userAgent: navigator.userAgent,
-            platform: navigator.platform || 'Unknown',
+    const fetchParticipants = async () => {
+      const { data, error } = await supabase
+        .from('participants')
+        .select('*')
+        .order('registered_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching participants:', error);
+      } else if (data) {
+        const mapped = data.map((p: any) => ({
+          id: p.id,
+          firstName: p.first_name,
+          surname: p.surname,
+          telephone: p.telephone,
+          email: p.email || 'N/A',
+          association: p.association || 'N/A',
+          registeredAt: new Date(p.registered_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          deviceInfo: p.device_info || {
+            userAgent: 'Unknown',
+            platform: 'Unknown',
             browser: 'Unknown',
             deviceType: 'desktop',
             screenResolution: 'Unknown'
           }
         }));
-        setParticipants(migrated);
-      } catch (e) {
-        console.error('Failed to parse saved attendees', e);
+        setParticipants(mapped);
       }
-    }
+    };
+    
+    fetchParticipants();
   }, []);
-
-  // Sync participants to LocalStorage whenever updated
-  useEffect(() => {
-    localStorage.setItem('omnibsic_event_participants', JSON.stringify(participants));
-  }, [participants]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -101,6 +107,7 @@ export default function OnSpotRegistration() {
       setIsEditing(false);
       setEditingId(null);
     } else {
+      const deviceInfo = getDeviceInfo();
       // Add new participant
       const newParticipant: Participant = {
         id: participants.length > 0 ? Math.max(...participants.map(p => p.id)) + 1 : 1,
@@ -110,10 +117,25 @@ export default function OnSpotRegistration() {
         email: formData.email.trim() || 'N/A',
         association: formData.association.trim() || 'N/A',
         registeredAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        deviceInfo: getDeviceInfo()
+        deviceInfo: deviceInfo
       };
 
       setParticipants([newParticipant, ...participants]);
+
+      // Save to Supabase
+      supabase.from('participants').insert({
+        first_name: formData.firstName.trim(),
+        surname: formData.surname.trim(),
+        telephone: formData.telephone.trim(),
+        email: formData.email.trim() || null,
+        association: formData.association.trim() || null,
+        device_info: deviceInfo,
+        registered_at: new Date().toISOString()
+      }).then(({ error }) => {
+        if (error) {
+          console.error('Error saving to Supabase:', error);
+        }
+      });
     }
     
     // Clear form & show success badge
@@ -171,19 +193,32 @@ export default function OnSpotRegistration() {
     XLSX.writeFile(workbook, fileName);
   };
 
-  const clearList = () => {
+  const clearList = async () => {
     if (confirm('Are you sure you want to clear all registered participants?')) {
-      setParticipants([]);
-      localStorage.removeItem('omnibsic_event_participants');
+      // Delete all from Supabase
+      const { error } = await supabase.from('participants').delete().neq('id', 0);
+      
+      if (error) {
+        console.error('Error clearing participants:', error);
+      } else {
+        setParticipants([]);
+      }
     }
   };
 
-  const deleteParticipant = (id: number) => {
+  const deleteParticipant = async (id: number) => {
     if (confirm('Are you sure you want to delete this participant?')) {
-      setParticipants(participants.filter(p => p.id !== id));
-      // If deleting the currently edited participant, cancel edit mode
-      if (editingId === id) {
-        cancelEdit();
+      // Delete from Supabase
+      const { error } = await supabase.from('participants').delete().eq('id', id);
+      
+      if (error) {
+        console.error('Error deleting participant:', error);
+      } else {
+        setParticipants(participants.filter(p => p.id !== id));
+        // If deleting the currently edited participant, cancel edit mode
+        if (editingId === id) {
+          cancelEdit();
+        }
       }
     }
   };
