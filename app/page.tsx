@@ -92,7 +92,21 @@ export default function OnSpotRegistration() {
     }
 
     if (isEditing && editingId !== null) {
-      // Update existing participant
+      // Update existing participant in Supabase
+      const supabase = getSupabase();
+      supabase.from('participants').update({
+        first_name: formData.firstName.trim(),
+        surname: formData.surname.trim(),
+        telephone: formData.telephone.trim(),
+        email: formData.email.trim() || null,
+        association: formData.association.trim() || null
+      }).eq('id', editingId).then(({ error }) => {
+        if (error) {
+          console.error('Error updating participant in Supabase:', error);
+        }
+      });
+
+      // Update local state
       setParticipants(participants.map(p => 
         p.id === editingId 
           ? {
