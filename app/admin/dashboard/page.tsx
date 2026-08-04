@@ -199,8 +199,8 @@ export default function AdminDashboard() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-xl font-bold text-white">Admin Dashboard</h1>
-            <p className="text-sm text-slate-400">OmniBSIC Bank Roundtable Discussion</p>
+            <h1 className="text-xl font-bold text-white">Dashboard</h1>
+            <p className="text-sm text-slate-400">Brands and Digital Communication Manager Overview</p>
           </div>
         </div>
 
