@@ -205,7 +205,7 @@ export default function OnSpotRegistration() {
     worksheet['!cols'] = max_widths;
 
     // Trigger download
-    const fileName = `OmniBSIC_Event_Registration_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    const fileName = `COLEAD_Event_Registration_${new Date().toISOString().slice(0, 10)}.xlsx`;
     XLSX.writeFile(workbook, fileName);
   };
 
@@ -277,16 +277,16 @@ export default function OnSpotRegistration() {
         <div className="flex items-center space-x-3">
           <div className="h-10 w-10 relative flex items-center justify-center shrink-0">
   <Image
-    src="/logo.jfif"
-    alt="OmniBSIC Bank Logo"
-    width={90}
-    height={90}
+    src="/logo2.png"
+    alt="Colead Logo"
+    width={150}
+    height={150}
     className="object-contain"
     priority
   />
 </div>
           <span className="font-bold tracking-wider text-sm md:text-base text-slate-200 uppercase">
-            OmniBSIC <span className="text-amber-400 font-normal">Roundtable Discussion</span>
+            COLEAD <span className="text-amber-400 font-normal">Public-Private Dialogue (PPD) Workshop</span>
           </span>
         </div>
 
@@ -520,7 +520,7 @@ export default function OnSpotRegistration() {
 
       {/* Footer */}
       <footer className="w-full text-center py-4 text-xs text-slate-600 z-10 border-t border-slate-900">
-        &copy; {new Date().getFullYear()} OmniBSIC Bank. Roundtable Discussion Event Registration Desk.
+        &copy; {new Date().getFullYear()} Colead. Public-Private Dialogue (PPD) Workshop Event Registration Desk.
       </footer>
 
     </div>
