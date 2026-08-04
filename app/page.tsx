@@ -85,7 +85,7 @@ export default function OnSpotRegistration() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+ const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.firstName.trim() || !formData.surname.trim() || !formData.telephone.trim()) {
       return;
@@ -94,13 +94,13 @@ export default function OnSpotRegistration() {
     if (isEditing && editingId !== null) {
       // Update existing participant in Supabase
       const supabase = getSupabase();
-      supabase.from('participants').update({
+      (supabase.from('participants') as any).update({
         first_name: formData.firstName.trim(),
         surname: formData.surname.trim(),
         telephone: formData.telephone.trim(),
         email: formData.email.trim() || null,
         association: formData.association.trim() || null
-      }).eq('id', editingId).then(({ error }) => {
+      }).eq('id', editingId).then(({ error }: { error: any }) => {
         if (error) {
           console.error('Error updating participant in Supabase:', error);
         }
@@ -139,7 +139,7 @@ export default function OnSpotRegistration() {
 
       // Save to Supabase
       const supabase = getSupabase();
-      supabase.from('participants').insert({
+      (supabase.from('participants') as any).insert({
         first_name: formData.firstName.trim(),
         surname: formData.surname.trim(),
         telephone: formData.telephone.trim(),
@@ -147,7 +147,7 @@ export default function OnSpotRegistration() {
         association: formData.association.trim() || null,
         device_info: deviceInfo,
         registered_at: new Date().toISOString()
-      } as any).then(({ error }) => {
+      }).then(({ error }: { error: any }) => {
         if (error) {
           console.error('Error saving to Supabase:', error);
         }
@@ -166,7 +166,7 @@ export default function OnSpotRegistration() {
     setIsSuccess(true);
     setTimeout(() => setIsSuccess(false), 3000);
   };
-
+  
   // Export data array to Excel (.xlsx)
   const exportToExcel = () => {
     if (participants.length === 0) return;
