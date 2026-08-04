@@ -368,7 +368,7 @@ export default function AdminDashboard() {
 
       {/* Footer */}
       <footer className="relative z-10 w-full text-center py-4 text-xs text-slate-600 border-t border-slate-900">
-        &copy; {new Date().getFullYear()} OmniBSIC Bank. Admin Dashboard.
+        &copy; {new Date().getFullYear()} Admin Dashboard.
       </footer>
     </div>
   );
