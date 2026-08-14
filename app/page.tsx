@@ -277,8 +277,8 @@ export default function OnSpotRegistration() {
         <div className="flex items-center space-x-3">
           <div className="h-10 w-10 relative flex items-center justify-center shrink-0">
   <Image
-    src="/logo2.png"
-    alt="Colead Logo"
+    src="/FAGE Logos-02.png"
+    alt="FAGE Logo"
     width={150}
     height={150}
     className="object-contain"
@@ -286,7 +286,7 @@ export default function OnSpotRegistration() {
   />
 </div>
           <span className="font-bold tracking-wider text-sm md:text-base text-slate-200 uppercase">
-            COLEAD <span className="text-amber-400 font-normal">Public-Private Dialogue (PPD) Workshop</span>
+            FAGE <span className="text-amber-400 font-normal">Ghana Horticulture Expo Press Conference</span>
           </span>
         </div>
 
