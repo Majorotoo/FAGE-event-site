@@ -68,3 +68,46 @@ export async function getDefaultSettings() {
     adminEmail: process.env.ADMIN_EMAIL || 'admin@fage.com',
   } as const;
 }
+
+export async function getDefaultEventConfig() {
+  return {
+    eventName: 'FAGE Event',
+    logoUrl: '/FAGE%20Logos-02.png',
+    themeColor: '#0f172a',
+    registrationOpen: false,
+    lastUpdated: new Date().toISOString(),
+  } as const;
+}
+
+export async function getEventConfig() {
+  return readJson<typeof import('@/lib/types').EventBrandConfig | ReturnType<typeof getDefaultEventConfig>>(
+    'event-config.json',
+    await getDefaultEventConfig(),
+  );
+}
+
+export async function saveEventConfig(config: Awaited<ReturnType<typeof getDefaultEventConfig>>) {
+  await writeJson('event-config.json', { ...config, lastUpdated: new Date().toISOString() });
+}
+
+export async function archiveActiveParticipants(eventName: string, logoUrl: string) {
+  const participants = await readJson<any[]>('participants.json', []);
+  const archives = await readJson<any[]>('archives.json', []);
+
+  if (!participants.length) {
+    return { archived: 0, archive: null };
+  }
+
+  const archiveEntry = {
+    id: `ARC-${Date.now()}`,
+    eventName,
+    logoUrl,
+    archivedAt: new Date().toISOString(),
+    participants,
+  };
+
+  await writeJson('archives.json', [archiveEntry, ...archives]);
+  await writeJson('participants.json', []);
+
+  return { archived: participants.length, archive: archiveEntry };
+}
