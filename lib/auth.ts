@@ -1,51 +1,34 @@
-// Admin authentication utilities
+import { cookies } from 'next/headers';
+import { SignJWT, jwtVerify } from 'jose';
 
-const ADMIN_CREDENTIALS = {
-  username: 'majorotoo@gmail.com',
-  password: 'majorotoo@QS1'
-};
+const ADMIN_SESSION_SECRET = new TextEncoder().encode(
+  process.env.ADMIN_SESSION_SECRET || 'fage-admin-session-secret-change-me',
+);
 
-const AUTH_STORAGE_KEY = 'omnibsic_admin_auth';
-
-export interface AdminAuth {
-  isAuthenticated: boolean;
-  timestamp: number;
+export async function createAdminSessionToken(email: string) {
+  return new SignJWT({ email })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('8h')
+    .sign(ADMIN_SESSION_SECRET);
 }
 
-export function login(username: string, password: string): boolean {
-  if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-    const auth: AdminAuth = {
-      isAuthenticated: true,
-      timestamp: Date.now()
-    };
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
-    return true;
+export async function verifyAdminSessionToken(token: string) {
+  const { payload } = await jwtVerify(token, ADMIN_SESSION_SECRET);
+  return payload.email as string | undefined;
+}
+
+export async function getCurrentAdminEmail() {
+  const cookieStore = cookies();
+  const sessionToken = cookieStore.get('fage_session')?.value;
+
+  if (!sessionToken) {
+    return null;
   }
-  return false;
-}
 
-export function logout(): void {
-  localStorage.removeItem(AUTH_STORAGE_KEY);
-}
-
-export function isAuthenticated(): boolean {
   try {
-    const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!stored) return false;
-    
-    const auth: AdminAuth = JSON.parse(stored);
-    
-    // Session expires after 24 hours
-    const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-    const isExpired = Date.now() - auth.timestamp > SESSION_DURATION;
-    
-    if (isExpired) {
-      logout();
-      return false;
-    }
-    
-    return auth.isAuthenticated;
+    return await verifyAdminSessionToken(sessionToken);
   } catch {
-    return false;
+    return null;
   }
 }
